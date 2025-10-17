@@ -6,7 +6,10 @@ import android.net.Uri
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -14,9 +17,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -45,21 +53,48 @@ fun CameraScreen(
         }
     }
 
-    if (!cameraPermission.status.isGranted) {
-        Column(
+    AnimatedVisibility(
+        visible = !cameraPermission.status.isGranted,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .background(Color(0x33000000)),
+            contentAlignment = Alignment.Center
         ) {
-            Text("Camera permission is required to take photos")
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { cameraPermission.launchPermissionRequest() }) {
-                Text("Grant Permission")
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Camera permission is required to take photos",
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Button(onClick = { cameraPermission.launchPermissionRequest() }) {
+                        Text("Grant Permission")
+                    }
+                }
             }
         }
-    } else {
+    }
+
+    AnimatedVisibility(
+        visible = cameraPermission.status.isGranted,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
         CameraView(
             context = context,
             lifecycleOwner = lifecycleOwner,
@@ -87,15 +122,9 @@ private fun CameraView(
         val preview = Preview.Builder().build()
         val capture = ImageCapture.Builder().build()
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
         try {
             cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                cameraSelector,
-                preview,
-                capture
-            )
+            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, capture)
             preview.setSurfaceProvider(previewView.surfaceProvider)
             imageCapture = capture
         } catch (e: Exception) {
@@ -109,32 +138,48 @@ private fun CameraView(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Back button
+        // Camera Hint Overlay
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(24.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0x99000000))
+                .padding(vertical = 10.dp, horizontal = 18.dp)
+        ) {
+            Text(
+                text = "Center your homework clearly in the box",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        // Back button with rounded background
         IconButton(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(16.dp)
+                .padding(18.dp)
+                .size(42.dp)
+                .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), shape = RoundedCornerShape(50))
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = MaterialTheme.colorScheme.primary
             )
         }
 
-        // Capture button
+        // Capture button with ripple and animation
         FloatingActionButton(
             onClick = {
                 imageCapture?.let { capture ->
                     val photoFile = File(
                         context.cacheDir,
-                        SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
-                            .format(System.currentTimeMillis()) + ".jpg"
+                        SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
                     )
-
                     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
                     capture.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),
@@ -142,9 +187,8 @@ private fun CameraView(
                             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                                 onPhotoTaken(Uri.fromFile(photoFile))
                             }
-
                             override fun onError(exception: ImageCaptureException) {
-                                // Handle error
+                                // Show error dialog or snackBar
                             }
                         }
                     )
@@ -152,13 +196,17 @@ private fun CameraView(
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(32.dp)
-                .size(70.dp)
+                .padding(bottom = 42.dp)
+                .size(84.dp)
+                .clip(RoundedCornerShape(50)),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White,
+            elevation = FloatingActionButtonDefaults.elevation(12.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.PhotoCamera,
                 contentDescription = "Take Photo",
-                modifier = Modifier.size(35.dp)
+                modifier = Modifier.size(38.dp)
             )
         }
     }
