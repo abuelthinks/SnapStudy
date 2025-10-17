@@ -54,7 +54,7 @@ class ApiService {
         }
 
         val response = api.generateContent(
-            "AIzaSyAfnABhqNveHCn70D2P14SWCOW9_IsiEVg", // Replace with your key in quotes
+            "AIzaSyAfnABhqNveHCn70D2P14SWCOW9_IsiEVg",
             GeminiRequest(
                 contents = listOf(
                     Content(parts = listOf(Part(text = prompt)))

@@ -33,7 +33,8 @@ fun SnapStudyApp() {
         composable("home") {
             HomeScreen(
                 viewModel = viewModel,
-                onTakePhoto = { navController.navigate("camera") }
+                onTakePhoto = { navController.navigate("camera") },
+                onHistoryClick = { navController.navigate("history") }
             )
         }
         composable("camera") {
@@ -51,6 +52,12 @@ fun SnapStudyApp() {
                     navController.popBackStack("home", false)
                     navController.navigate("camera")
                 }
+            )
+        }
+        composable("history") {
+            HistoryScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
             )
         }
     }
