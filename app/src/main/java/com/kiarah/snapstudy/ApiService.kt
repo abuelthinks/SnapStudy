@@ -29,7 +29,7 @@ data class GeminiPart(
     val text: String
 )
 
-// Gemini Retrofit API interface (UPDATED endpoint)
+// Gemini Retrofit API interface
 interface GeminiApi {
     @POST("models/gemini-1.5-flash:generateContent")
     suspend fun generateContent(
@@ -38,8 +38,8 @@ interface GeminiApi {
     ): GeminiResponse
 }
 
-// ApiService class (UPDATED baseUrl)
 class ApiService {
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://generativelanguage.googleapis.com/v1/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -53,8 +53,10 @@ class ApiService {
             UserMode.PARENT -> "Explain how a parent can help with: $text"
         }
 
+        val apiKey = BuildConfig.OPENAI_API_KEY
+
         val response = api.generateContent(
-            "AIzaSyAfnABhqNveHCn70D2P14SWCOW9_IsiEVg",
+            apiKey,
             GeminiRequest(
                 contents = listOf(
                     Content(parts = listOf(Part(text = prompt)))

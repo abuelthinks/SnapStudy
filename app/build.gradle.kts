@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// --- Load API KEY from local.properties ---
+val localProperties = Properties()
+localProperties.load(rootProject.file("local.properties").inputStream())
+val openAiKey = localProperties.getProperty("OPENAI_API_KEY")
+// ------------------------------------------
 
 android {
     namespace = "com.kiarah.snapstudy"
@@ -14,6 +22,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "OPENAI_API_KEY", "\"$openAiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig= true
     }
 }
 
@@ -69,4 +80,3 @@ dependencies {
     // Accompanist (permissions)
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 }
-
