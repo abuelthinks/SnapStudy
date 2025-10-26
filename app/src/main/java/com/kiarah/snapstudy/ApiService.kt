@@ -52,7 +52,9 @@ class ApiService(private val apiKey: String) {
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(AuthInterceptor(apiKey))
+        .callTimeout(60, java.util.concurrent.TimeUnit.SECONDS) // set longer timeout
         .build()
+
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://api.openai.com/v1/")

@@ -186,9 +186,10 @@ private fun CameraView(
                         object : ImageCapture.OnImageSavedCallback {
                             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                                 onPhotoTaken(Uri.fromFile(photoFile))
+                                ToastUtil.showShort(context, "Photo captured!")
                             }
                             override fun onError(exception: ImageCaptureException) {
-                                // Show error dialog or snackBar
+                                ToastUtil.showLong(context, "Error: ${exception.message}")
                             }
                         }
                     )

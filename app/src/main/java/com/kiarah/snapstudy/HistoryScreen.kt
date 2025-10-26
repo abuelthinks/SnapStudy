@@ -22,27 +22,10 @@ data class SampleHistoryItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
-    viewModel: SnapStudyViewModel, // for later connection to real data
+    viewModel: SnapStudyViewModel,
     onBack: () -> Unit
 ) {
-    // Temporary: use a normal list, no delegate
-    val history = listOf(
-        SampleHistoryItem(
-            timestamp = "Oct 17, 21:09",
-            extractedText = "Solve: 2x + 3 = 11",
-            aiResponse = "Subtract 3, then divide by 2: x = 4"
-        ),
-        SampleHistoryItem(
-            timestamp = "Oct 16, 17:55",
-            extractedText = "What is photosynthesis?",
-            aiResponse = "Photosynthesis is how plants convert sunlight into energy."
-        ),
-        SampleHistoryItem(
-            timestamp = "Oct 16, 08:22",
-            extractedText = "Translate ‘hello’ to Spanish.",
-            aiResponse = "‘hello’ in Spanish is ‘hola’."
-        )
-    )
+    val history = viewModel.history.value
 
     Scaffold(
         topBar = {
@@ -50,49 +33,56 @@ fun HistoryScreen(
                 title = { Text("Scan History") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-        ) {
-            items(history) { item ->
-                Card(
-                    shape = RoundedCornerShape(10.dp),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(item.timestamp, fontSize = 12.sp, color = Color.Gray)
-                        Spacer(Modifier.height(4.dp))
-                        Text("Extracted: ${item.extractedText}", fontSize = 16.sp)
-                        Spacer(Modifier.height(2.dp))
-                        Text("AI: ${item.aiResponse}", fontSize = 15.sp, color = MaterialTheme.colorScheme.primary)
+        if (history.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
+            ) {
+                items(history) { item ->
+                    Card(
+                        shape = RoundedCornerShape(10.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(formatTimestamp(item.timestamp), fontSize = 12.sp, color = Color.Gray)
+                            Spacer(Modifier.height(4.dp))
+                            Text("Q: ${item.extractedText}", fontSize = 16.sp)
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                "Ans: ${item.aiResponse.take(50)}...",
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
-            if (history.isEmpty()) {
-                item {
-                    Text(
-                        text = "No history yet!",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 40.dp),
-                        fontSize = 15.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
+        } else {
+            Text(
+                text = "No history yet!",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp),
+                fontSize = 15.sp,
+                color = Color.Gray
+            )
         }
     }
+}
+
+// Helper function for time formatting (put at top or separate util file)
+fun formatTimestamp(timestamp: Long): String {
+    val date = java.util.Date(timestamp)
+    val format = java.text.SimpleDateFormat("MMM dd, HH:mm")
+    return format.format(date)
 }

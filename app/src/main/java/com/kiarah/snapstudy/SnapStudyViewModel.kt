@@ -1,9 +1,11 @@
 package com.kiarah.snapstudy
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -52,6 +54,9 @@ class SnapStudyViewModel : ViewModel() {
     }
 
     private fun processImage(context: Context, uri: Uri) {
+        val serviceIntent = Intent(context, ProcessingService::class.java)
+        ContextCompat.startForegroundService(context, serviceIntent)
+
         viewModelScope.launch {
             _isProcessing.value = true
             _error.value = null
