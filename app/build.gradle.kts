@@ -23,8 +23,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        manifestPlaceholders["foregroundServiceJustification"] = "Processing homework images with AI"
         buildConfigField("String", "OPENAI_API_KEY", "\"$openAiKey\"")
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
